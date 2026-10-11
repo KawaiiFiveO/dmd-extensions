@@ -56,6 +56,8 @@
 						<RowDefinition Height="Auto"/>
 						<RowDefinition Height="Auto"/>
 						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="Auto"/>
 					</Grid.RowDefinitions>
 
 					<dmd:SliderValueSetting x:Name="DotSize"      Grid.Row="0" Grid.Column="0" Width="Auto" LabelContent="Dot Size:" MinValue="0.1" MaxValue="2" LabelWidth="110" LabelAlignment="Left" Margin="0,0,10,0"></dmd:SliderValueSetting>
@@ -75,7 +77,10 @@
 						<xctk:ColorPicker x:Name="TintColor" HorizontalAlignment="Left"  VerticalAlignment="Center" Width="173" Margin="110,1.333,0,0" DisplayColorAndName="False" ColorMode="ColorCanvas" UsingAlphaChannel="False" ShowAvailableColors="False"/>
 					</Grid>
 					<dmd:SliderValueSetting x:Name="TintAmount" Grid.Row="4" Grid.Column="1" Width="Auto" LabelContent="Tint amount:" MinValue="0.0" MaxValue="1.0" LabelWidth="110" LabelAlignment="Left" Margin="0,0,10,0"></dmd:SliderValueSetting>
-					<Label x:Name="TintWarning" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Content="⚠️ The currently running game is colored, so tint settings won't be applied." HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="DarkRed"/>
+					<dmd:SliderValueSetting x:Name="Scanlines" Grid.Row="5" Grid.Column="0" Width="Auto" LabelContent="Scanlines:" MinValue="0" MaxValue="1" LabelWidth="110" LabelAlignment="Left" Margin="0,0,10,0"></dmd:SliderValueSetting>
+					<dmd:SliderValueSetting x:Name="ScanlinesPerDot" Grid.Row="5" Grid.Column="1" Width="Auto" LabelContent="Scanlines per Dot:" MinValue="1" MaxValue="4" LabelWidth="110" LabelAlignment="Left" Margin="0,0,10,0"></dmd:SliderValueSetting>
+					<CheckBox x:Name="SmoothEdges" Grid.Row="6" Grid.Column="0" Content="Smooth edges (solid pixels, diagonal corners)" VerticalAlignment="Center" Margin="5,4,0,4"/>
+					<Label x:Name="TintWarning" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Content="⚠️ The currently running game is colored, so tint settings won't be applied." HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="DarkRed"/>
 				</Grid>
 			</Grid>
 		</GroupBox>

@@ -84,6 +84,23 @@ namespace LibDmd.Output.Virtual.Dmd
 				UpdatePreview();
 			});
 
+			Scanlines.OnValueChanged.Subscribe(value => {
+				_previewStyle.Scanlines = value;
+				UpdatePreview();
+			});
+
+			ScanlinesPerDot.SliderValue.TickFrequency = 1;
+			ScanlinesPerDot.SliderValue.IsSnapToTickEnabled = true;
+			ScanlinesPerDot.OnValueChanged.Subscribe(value => {
+				_previewStyle.ScanlinesPerDot = (int)Math.Round(value);
+				UpdatePreview();
+			});
+
+			SmoothEdges.Click += (sender, e) => {
+				_previewStyle.SmoothEdges = SmoothEdges.IsChecked == true;
+				UpdatePreview();
+			};
+
 			UnlitDotColor.SelectedColorChanged += (sender, e) => _previewStyle.UnlitDot = UnlitDotColor.SelectedColor.Value;
 			UnlitDotColor.SelectedColorChanged += (sender, e) => UpdatePreview();
 
@@ -151,6 +168,9 @@ namespace LibDmd.Output.Virtual.Dmd
 			DotSize.Update(_previewStyle.DotSize);
 			DotRounding.Update(_previewStyle.DotRounding);
 			DotSharpness.Update(_previewStyle.DotSharpness);
+			Scanlines.Update(_previewStyle.Scanlines);
+			ScanlinesPerDot.Update(_previewStyle.ScanlinesPerDot);
+			SmoothEdges.IsChecked = _previewStyle.SmoothEdges;
 			Brightness.Update(_previewStyle.Brightness);
 			Gamma.Update(_previewStyle.Gamma);
 			DotGlow.Update(_previewStyle.DotGlow);

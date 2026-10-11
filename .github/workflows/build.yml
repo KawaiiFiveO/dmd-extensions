@@ -109,7 +109,10 @@ jobs:
                 $tag=$match.groups[5].value
           
                 $branch = if ($env:GITHUB_HEAD_REF) { $env:GITHUB_HEAD_REF } else { $env:GITHUB_REF_NAME }
-                if ($branch -eq "master" -or $branch -eq "main") {
+                if ($env:GITHUB_REF.StartsWith("refs/tags/")) {
+                  # releases are versioned by their tag, e.g. "v2.5.1-sigma" => "2.5.1-sigma"
+                  $version = $env:GITHUB_REF_NAME.TrimStart("v")
+                } elseif ($branch -eq "master" -or $branch -eq "main") {
                   if ($tag) { $version = "$major.$minor.$patch-$tag-r$env:BRANCH_BUILD" }
                   else { $version = "$major.$minor.$patch-r$env:BRANCH_BUILD" }
                 } else {
@@ -218,3 +221,37 @@ jobs:
           path: ${{ github.workspace }}\Installer\Builds\dmdext-v${{ steps.set_version.outputs.version }}-${{ matrix.platform }}.msi
           retention-days: 90
           if-no-files-found: error
+
+  # publishes a GitHub release with the zips and installers when a tag is pushed, e.g.:
+  #   git tag v2.5.1-sigma && git push origin v2.5.1-sigma
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build-windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Package release files
+        shell: bash
+        run: |
+          mkdir release
+          for dir in artifacts/*/; do
+            name=$(basename "$dir")
+            if [[ "$name" == *-msi ]]; then
+              cp "$dir"*.msi release/
+            else
+              (cd "$dir" && zip -r "$GITHUB_WORKSPACE/release/$name.zip" .)
+            fi
+          done
+          ls -l release
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true

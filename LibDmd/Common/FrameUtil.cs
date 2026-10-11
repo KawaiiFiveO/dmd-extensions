@@ -456,6 +456,170 @@ namespace LibDmd.Common
 			}
 		}
 
+		/// <summary>
+		/// Scales a number of bit planes in both dimensions by two, using the given scaler. Falls back to
+		/// doubling the pixels for modes that don't smooth.
+		/// </summary>
+		/// <param name="dim">Dimensions of source planes</param>
+		/// <param name="srcPlanes">Planes to scale</param>
+		/// <param name="scalerMode">Scaling algorithm</param>
+		/// <returns>Scaled bit planes</returns>
+		public static byte[][] ScaleUp(Dimensions dim, byte[][] srcPlanes, ScalerMode scalerMode)
+		{
+			switch (scalerMode) {
+				case ScalerMode.Scale2x: return Scale2X(dim, srcPlanes);
+				case ScalerMode.Xbr: return ScaleXbr(dim, srcPlanes);
+				default: return ScaleDouble(dim, srcPlanes);
+			}
+		}
+
+		/// <summary>
+		/// Scales a number of bit planes in both dimensions by two, by using the xBR algorithm.
+		/// </summary>
+		/// <param name="dim">Dimensions of source plane</param>
+		/// <param name="srcPlane">Source plane (eight 1-bit pixels packed into one byte</param>
+		/// <returns>Scaled bit planes</returns>
+		public static byte[][] ScaleXbr(Dimensions dim, byte[][] srcPlane)
+		{
+			var joinData = Join(dim, srcPlane);
+			var frameData = ScaleXbr(dim, joinData, 1);
+			return Split(dim * 2, srcPlane.Length, frameData);
+		}
+
+		/// <summary>
+		/// Implementation of xBR (by Hyllian) for frame data, without blending, so pixels stay sharp.
+		///
+		/// Contrary to Scale2x, which only looks at the four direct neighbors, xBR looks at a 5x5 neighborhood
+		/// to determine the direction of an edge. This avoids the "pinched" artifacts Scale2x produces on
+		/// diagonal lines that are more than one pixel wide, which is typical for DMD fonts.
+		///
+		/// With one byte per pixel, the data is either a shade or a palette index, so pixels are only
+		/// compared for equality. With RGB data, pixels are compared by their YUV distance.
+		/// </summary>
+		/// <see cref="https://github.com/libretro/glsl-shaders/tree/master/xbr"/>
+		/// <param name="dim">Original dimensions</param>
+		/// <param name="data">Original frame data</param>
+		/// <param name="bytesPerPixel">Number of bytes per pixel</param>
+		/// <returns>Scaled frame data</returns>
+		public static byte[] ScaleXbr(Dimensions dim, byte[] data, int bytesPerPixel)
+		{
+			using (Profiler.Start($"FrameUtil.ScaleXbr({bytesPerPixel})")) {
+				var src = new XbrSource(dim, data, bytesPerPixel);
+				var targetWidth = dim.Width * 2;
+				var scaledData = new byte[targetWidth * dim.Height * 2 * bytesPerPixel];
+
+				for (var y = 0; y < dim.Height; y++) {
+					for (var x = 0; x < dim.Width; x++) {
+						src.CopyPixel(XbrCorner(src, x, y, -1, -1), scaledData, 2 * x, 2 * y, targetWidth);
+						src.CopyPixel(XbrCorner(src, x, y, 1, -1), scaledData, 2 * x + 1, 2 * y, targetWidth);
+						src.CopyPixel(XbrCorner(src, x, y, -1, 1), scaledData, 2 * x, 2 * y + 1, targetWidth);
+						src.CopyPixel(XbrCorner(src, x, y, 1, 1), scaledData, 2 * x + 1, 2 * y + 1, targetWidth);
+					}
+				}
+				return scaledData;
+			}
+		}
+
+		/// <summary>
+		/// Computes the sub-pixel of the source pixel at (x, y) that lies in direction (sx, sy).
+		///
+		/// The neighborhood is named as if the sub-pixel were the bottom-right one:
+		/// <code>
+		///      B  C
+		///   D  E  F  F4
+		///   G  H  I  I4
+		///      H5 I5
+		/// </code>
+		/// </summary>
+		/// <returns>Index of the source pixel whose color the sub-pixel takes</returns>
+		private static int XbrCorner(XbrSource s, int x, int y, int sx, int sy)
+		{
+			var e = s.Index(x, y);
+			var b = s.Index(x, y - sy);
+			var c = s.Index(x + sx, y - sy);
+			var d = s.Index(x - sx, y);
+			var f = s.Index(x + sx, y);
+			var g = s.Index(x - sx, y + sy);
+			var h = s.Index(x, y + sy);
+			var i = s.Index(x + sx, y + sy);
+			var f4 = s.Index(x + 2 * sx, y);
+			var i4 = s.Index(x + 2 * sx, y + sy);
+			var h5 = s.Index(x, y + 2 * sy);
+			var i5 = s.Index(x + sx, y + 2 * sy);
+
+			// weight of an edge running through the corner (along F-H) vs. across it (along E-I)
+			var along = s.Distance(e, c) + s.Distance(e, g) + s.Distance(i, h5) + s.Distance(i, f4) + 4 * s.Distance(h, f);
+			var across = s.Distance(h, d) + s.Distance(h, i5) + s.Distance(f, i4) + s.Distance(f, b) + 4 * s.Distance(e, i);
+			if (along >= across) {
+				return e;
+			}
+			return s.Distance(e, f) <= s.Distance(e, h) ? f : h;
+		}
+
+		/// <summary>
+		/// Wraps frame data for xBR, with clamped pixel access and a color distance.
+		/// </summary>
+		private class XbrSource
+		{
+			private readonly Dimensions _dim;
+			private readonly byte[] _data;
+			private readonly int _bytesPerPixel;
+			private readonly int[] _y;
+			private readonly int[] _u;
+			private readonly int[] _v;
+
+			public XbrSource(Dimensions dim, byte[] data, int bytesPerPixel)
+			{
+				_dim = dim;
+				_data = data;
+				_bytesPerPixel = bytesPerPixel;
+				if (bytesPerPixel == 1) {
+					return;
+				}
+
+				_y = new int[dim.Surface];
+				_u = new int[dim.Surface];
+				_v = new int[dim.Surface];
+				for (var p = 0; p < dim.Surface; p++) {
+					int r, g, b;
+					if (bytesPerPixel == 2) {
+						// rgb565, high byte first
+						var rgb565 = (data[p * 2] << 8) | data[p * 2 + 1];
+						r = (rgb565 >> 11) << 3;
+						g = ((rgb565 >> 5) & 0x3F) << 2;
+						b = (rgb565 & 0x1F) << 3;
+					} else {
+						r = data[p * 3];
+						g = data[p * 3 + 1];
+						b = data[p * 3 + 2];
+					}
+					// BT.601, scaled by 1000
+					_y[p] = 299 * r + 587 * g + 114 * b;
+					_u[p] = -169 * r - 331 * g + 500 * b;
+					_v[p] = 500 * r - 419 * g - 81 * b;
+				}
+			}
+
+			public int Index(int x, int y)
+			{
+				return ImageUtil.Clamp(y, 0, _dim.Height - 1) * _dim.Width + ImageUtil.Clamp(x, 0, _dim.Width - 1);
+			}
+
+			public int Distance(int p1, int p2)
+			{
+				if (_bytesPerPixel == 1) {
+					return _data[p1] == _data[p2] ? 0 : 1;
+				}
+				// luma weighs more than chroma, same weights as the reference implementation
+				return 48 * Math.Abs(_y[p1] - _y[p2]) + 7 * Math.Abs(_u[p1] - _u[p2]) + 6 * Math.Abs(_v[p1] - _v[p2]);
+			}
+
+			public void CopyPixel(int srcIndex, byte[] dest, int x, int y, int destWidth)
+			{
+				Buffer.BlockCopy(_data, srcIndex * _bytesPerPixel, dest, (y * destWidth + x) * _bytesPerPixel, _bytesPerPixel);
+			}
+		}
+
 		//Scale down planes by displaying every second pixel
 		private static byte[] ScaleDown(Dimensions dim, byte[] srcPlane)
 		{

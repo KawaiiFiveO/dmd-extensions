@@ -246,9 +246,18 @@ namespace LibDmd
 			}
 
 			// resize
-			var data = scalerMode == ScalerMode.Doubler
-				? FrameUtil.ScaleDouble(Dimensions, Data, 1)
-				: FrameUtil.Scale2X(Dimensions, Data, 1);
+			byte[] data;
+			switch (scalerMode) {
+				case ScalerMode.Doubler:
+					data = FrameUtil.ScaleDouble(Dimensions, Data, 1);
+					break;
+				case ScalerMode.Xbr:
+					data = FrameUtil.ScaleXbr(Dimensions, Data, 1);
+					break;
+				default:
+					data = FrameUtil.Scale2X(Dimensions, Data, 1);
+					break;
+			}
 
 			Update(Dimensions * 2, data);
 			return this;

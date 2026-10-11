@@ -183,6 +183,55 @@ namespace LibDmd.Test
 
 			await AssertFrame(_source, dest, frame, scaledFrame);
 		}
+
+		[TestCase]
+		public async Task Should_Upscale_With_HDScaling_Xbr()
+		{
+			var dest = new DestinationDynamicGray2();
+
+			_graph.Source = _source;
+			_graph.ScalerMode = ScalerMode.Xbr;
+			_graph.Destinations = new List<IDestination> { dest };
+			_graph.StartRendering();
+
+			// two blocks only touching at the corner, where scale2x leaves a checkered gap
+			var frame = FrameGenerator.FromString(@"
+				00003300
+				00003300
+				00330000
+				00330000");
+
+			var scaledFrame = FrameGenerator.FromString(@"
+				0000000033330000
+				0000000033330000
+				0000000033330000
+				0000000033300000
+				0000033300000000
+				0000333300000000
+				0000333300000000
+				0000333300000000");
+
+			await AssertFrame(_source, dest, frame, scaledFrame);
+		}
+
+		[TestCase]
+		public async Task Should_Not_Upscale_When_Destination_Smooths_Edges()
+		{
+			var dest = new DestinationDynamicGray2Smoothing();
+
+			_graph.Source = _source;
+			_graph.ScalerMode = ScalerMode.Xbr;
+			_graph.Destinations = new List<IDestination> { dest };
+			_graph.StartRendering();
+
+			var frame = FrameGenerator.FromString(@"
+				00003300
+				00003300
+				00330000
+				00330000");
+
+			await AssertFrame(_source, dest, frame, frame);
+		}
 		
 		[TestCase]
 		public async Task Should_Convert_To_RGB24()

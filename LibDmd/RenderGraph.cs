@@ -107,6 +107,15 @@ namespace LibDmd
 
 		public ScalerMode ScalerMode { get; set; } = ScalerMode.None;
 
+		/// <summary>
+		/// The scaler mode for a given destination. A destination that smooths edges itself gets
+		/// frames unscaled. Evaluated per frame, so it follows style changes at runtime.
+		/// </summary>
+		private ScalerMode ScalerModeFor(IDestination dest)
+		{
+			return dest is ISmoothingDestination smoothing && smoothing.SmoothsEdges ? ScalerMode.None : ScalerMode;
+		}
+
 		#endregion
 
 		#region Constants
@@ -834,7 +843,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray2.GetGray2Frames(!dest.NeedsDuplicateFrames, !dest.NeedsIdentificationFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray2.RenderGray2
 							);
@@ -850,7 +859,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray2.GetGray2Frames(!dest.NeedsDuplicateFrames, !dest.NeedsIdentificationFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertGrayToRgb565(_gray2Palette ?? _gray2Colors)
 									.TransformRgb565(this, destFixedSize, destMultiSize),
 								destRgb565.RenderRgb565
@@ -863,7 +872,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray2.GetGray2Frames(!dest.NeedsDuplicateFrames, !dest.NeedsIdentificationFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertGrayToRgb24(_gray2Palette ?? _gray2Colors)
 									.TransformRgb24(this, destFixedSize, destMultiSize),
 								destRgb24.RenderRgb24
@@ -876,7 +885,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray2.GetGray2Frames(!dest.NeedsDuplicateFrames, !dest.NeedsIdentificationFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertGrayToBmp(_gray2Palette ?? _gray2Colors)
 									.Transform(this, destFixedSize, destMultiSize),
 								destBitmap.RenderBitmap
@@ -910,7 +919,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray4.GetGray4Frames(!dest.NeedsDuplicateFrames, !dest.NeedsIdentificationFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToGray2()
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray2.RenderGray2);
@@ -922,7 +931,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray4.GetGray4Frames(!dest.NeedsDuplicateFrames, !dest.NeedsIdentificationFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray4.RenderGray4);
 							break;
@@ -933,7 +942,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray4.GetGray4Frames(!dest.NeedsDuplicateFrames, !dest.NeedsIdentificationFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertGrayToRgb565(_gray4Palette ?? _gray4Colors)
 									.TransformRgb565(this, destFixedSize, destMultiSize),
 								destRgb565.RenderRgb565
@@ -946,7 +955,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray4.GetGray4Frames(!dest.NeedsDuplicateFrames, !dest.NeedsIdentificationFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertGrayToRgb24(_gray4Palette ?? _gray4Colors)
 									.TransformRgb24(this, destFixedSize, destMultiSize),
 								destRgb24.RenderRgb24);
@@ -958,7 +967,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray4.GetGray4Frames(!dest.NeedsDuplicateFrames, !dest.NeedsIdentificationFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertGrayToBmp(_gray4Palette ?? _gray4Colors)
 									.Transform(this, destFixedSize, destMultiSize),
 								destBitmap.RenderBitmap);
@@ -993,7 +1002,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray8.GetGray8Frames(!dest.NeedsDuplicateFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToGray4()
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray4.RenderGray4);
@@ -1005,7 +1014,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray8.GetGray8Frames(!dest.NeedsDuplicateFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToGray2()
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray2.RenderGray2);
@@ -1017,7 +1026,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray8.GetGray8Frames(!dest.NeedsDuplicateFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray8.RenderGray8);
 							break;
@@ -1028,7 +1037,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray8.GetGray8Frames(!dest.NeedsDuplicateFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertGray8ToColoredGray6(_gray6Palette ?? _gray6Colors)
 									.Transform(this, destFixedSize, destMultiSize),
 								destColoredGray6.RenderColoredGray6
@@ -1041,7 +1050,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray8.GetGray8Frames(!dest.NeedsDuplicateFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertGrayToRgb565(_gray8Palette ?? _gray8Colors)
 									.TransformRgb565(this, destFixedSize, destMultiSize),
 								destRgb565.RenderRgb565
@@ -1054,7 +1063,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray8.GetGray8Frames(!dest.NeedsDuplicateFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertGrayToRgb24(_gray8Palette ?? _gray8Colors)
 									.TransformRgb24(this, destFixedSize, destMultiSize),
 								destRgb24.RenderRgb24);
@@ -1066,7 +1075,7 @@ namespace LibDmd
 							Subscribe(
 								sourceGray8.GetGray8Frames(!dest.NeedsDuplicateFrames),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertGrayToBmp(_gray8Palette ?? _gray8Colors)
 									.Transform(this, destFixedSize, destMultiSize),
 								destBitmap.RenderBitmap);
@@ -1088,7 +1097,7 @@ namespace LibDmd
 								sourceRgb565.GetRgb565Frames(),
 								frame => frame
 									.ConvertToGray2()
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray2.RenderGray2);
 							break;
@@ -1100,7 +1109,7 @@ namespace LibDmd
 								sourceRgb565.GetRgb565Frames(),
 								frame => frame
 									.ConvertToGray4()
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray4.RenderGray4);
 							break;
@@ -1111,7 +1120,7 @@ namespace LibDmd
 							Subscribe(
 								sourceRgb565.GetRgb565Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformRgb565(this, destFixedSize, destMultiSize),
 								destRgb565.RenderRgb565
 							);
@@ -1124,7 +1133,7 @@ namespace LibDmd
 								sourceRgb565.GetRgb565Frames(),
 								frame => frame
 									.ConvertRgb565ToRgb24()
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformRgb24(this, destFixedSize, destMultiSize),
 								destRgb24.RenderRgb24);
 							break;
@@ -1135,7 +1144,7 @@ namespace LibDmd
 							Subscribe(
 								sourceRgb565.GetRgb565Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertRgbToBmp()
 									.Transform(this, destFixedSize, destMultiSize),
 								destBitmap.RenderBitmap);
@@ -1169,7 +1178,7 @@ namespace LibDmd
 								sourceRgb24.GetRgb24Frames(),
 								frame => frame
 									.ConvertToGray2()
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray2.RenderGray2);
 							break;
@@ -1181,7 +1190,7 @@ namespace LibDmd
 								sourceRgb24.GetRgb24Frames(),
 								frame => frame
 									.ConvertToGray4()
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray4.RenderGray4);
 							break;
@@ -1192,7 +1201,7 @@ namespace LibDmd
 							Subscribe(
 								sourceRgb24.GetRgb24Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertRgb24ToRgb565()
 									.TransformRgb565(this, destFixedSize, destMultiSize),
 								destRgb565.RenderRgb565
@@ -1205,7 +1214,7 @@ namespace LibDmd
 							Subscribe(
 								sourceRgb24.GetRgb24Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformRgb24(this, destFixedSize, destMultiSize),
 								destRgb24.RenderRgb24);
 							break;
@@ -1216,7 +1225,7 @@ namespace LibDmd
 							Subscribe(
 								sourceRgb24.GetRgb24Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertRgbToBmp()
 									.Transform(this, destFixedSize, destMultiSize),
 								destBitmap.RenderBitmap);
@@ -1250,7 +1259,7 @@ namespace LibDmd
 								sourceBitmap.GetBitmapFrames(),
 								frame => frame
 									.ConvertToGray2()
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray2.RenderGray2);
 							break;
@@ -1262,7 +1271,7 @@ namespace LibDmd
 								sourceBitmap.GetBitmapFrames(),
 								frame => frame
 									.ConvertToGray4()
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray4.RenderGray4);
 							break;
@@ -1275,7 +1284,7 @@ namespace LibDmd
 								sourceBitmap.GetBitmapFrames(),
 								frame => frame
 									.ConvertToRgb565()
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformRgb565(this, destFixedSize, destMultiSize),
 								destRgb565.RenderRgb565);
 							break;
@@ -1287,7 +1296,7 @@ namespace LibDmd
 								sourceBitmap.GetBitmapFrames(),
 								frame => frame
 									.ConvertToRgb24()
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.TransformRgb24(this, destFixedSize, destMultiSize),
 								destRgb24.RenderRgb24);
 							break;
@@ -1298,7 +1307,7 @@ namespace LibDmd
 							Subscribe(
 								sourceBitmap.GetBitmapFrames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.Transform(this, destFixedSize, destMultiSize),
 								destBitmap.RenderBitmap);
 							break;
@@ -1331,7 +1340,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray2.GetColoredGray2Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToGray()
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray2.RenderGray2);
@@ -1347,7 +1356,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray2.GetColoredGray2Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToRgb565()
 									.TransformRgb565(this, destFixedSize, destMultiSize),
 								destRgb565.RenderRgb565);
@@ -1359,7 +1368,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray2.GetColoredGray2Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToRgb24()
 									.TransformRgb24(this, destFixedSize, destMultiSize),
 								destRgb24.RenderRgb24);
@@ -1371,7 +1380,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray2.GetColoredGray2Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToBitmap()
 									.Transform(this, destFixedSize, destMultiSize),
 								destBitmap.RenderBitmap);
@@ -1383,7 +1392,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray2.GetColoredGray2Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.Transform(this, destFixedSize, destMultiSize),
 								destColoredGray2.RenderColoredGray2);
 							break;
@@ -1411,7 +1420,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray4.GetColoredGray4Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToGray()
 									.ConvertToGray2()
 									.TransformGray(this, destFixedSize, destMultiSize),
@@ -1424,7 +1433,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray4.GetColoredGray4Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToGray()
 									.TransformGray(this, destFixedSize, destMultiSize),
 								destGray4.RenderGray4);
@@ -1436,7 +1445,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray4.GetColoredGray4Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToRgb565()
 									.TransformRgb565(this, destFixedSize, destMultiSize),
 								destRgb565.RenderRgb565);
@@ -1448,7 +1457,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray4.GetColoredGray4Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToRgb24()
 									.TransformRgb24(this, destFixedSize, destMultiSize),
 								destRgb24.RenderRgb24);
@@ -1460,7 +1469,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray4.GetColoredGray4Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToBitmap()
 									.Transform(this, destFixedSize, destMultiSize),
 								destBitmap.RenderBitmap);
@@ -1476,7 +1485,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray4.GetColoredGray4Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.Transform(this, destFixedSize, destMultiSize),
 								destColoredGray4.RenderColoredGray4);
 							break;
@@ -1501,7 +1510,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray6.GetColoredGray6Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToGray()
 									.ConvertToGray2()
 									.TransformGray(this, destFixedSize, destMultiSize),
@@ -1514,7 +1523,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray6.GetColoredGray6Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.ConvertToGray()
 									.ConvertToGray4()
 									.TransformGray(this, destFixedSize, destMultiSize),
@@ -1529,7 +1538,7 @@ namespace LibDmd
 								Subscribe(
 									rotationWrapper.GetRgb24Frames(),
 									frame => frame
-										.TransformHdScaling(destFixedSize, ScalerMode)
+										.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 										.TransformRgb24(this, destFixedSize, destMultiSize),
 									destRgb24.RenderRgb24);
 								_activeSources.Add(rotationWrapper);
@@ -1537,7 +1546,7 @@ namespace LibDmd
 								Subscribe(
 									sourceColoredGray6.GetColoredGray6Frames(),
 									frame => frame
-										.TransformHdScaling(destFixedSize, ScalerMode)
+										.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 										.ConvertToRgb24()
 										.TransformRgb24(this, destFixedSize, destMultiSize),
 									destRgb24.RenderRgb24);
@@ -1553,7 +1562,7 @@ namespace LibDmd
 								Subscribe(
 									rotationWrapper.GetRgb24Frames(),
 									frame => frame
-										.TransformHdScaling(destFixedSize, ScalerMode)
+										.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 										.ConvertRgbToBmp()
 										.Transform(this, destFixedSize, destMultiSize),
 									destBitmap.RenderBitmap);
@@ -1561,7 +1570,7 @@ namespace LibDmd
 								Subscribe(
 									sourceColoredGray6.GetColoredGray6Frames(),
 									frame => frame
-										.TransformHdScaling(destFixedSize, ScalerMode)
+										.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 										.ConvertToBitmap()
 										.Transform(this, destFixedSize, destMultiSize),
 									destBitmap.RenderBitmap);
@@ -1583,7 +1592,7 @@ namespace LibDmd
 							Subscribe(
 								sourceColoredGray6.GetColoredGray6Frames(),
 								frame => frame
-									.TransformHdScaling(destFixedSize, ScalerMode)
+									.TransformHdScaling(destFixedSize, ScalerModeFor(dest))
 									.Transform(this, destFixedSize, destMultiSize),
 								destColoredGray6.RenderColoredGray6);
 							break;

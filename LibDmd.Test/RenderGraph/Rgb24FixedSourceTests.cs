@@ -345,6 +345,60 @@ namespace LibDmd.Test
 		}
 
 		[TestCase]
+		public async Task Should_Upscale_With_Xbr()
+		{
+			var dest = new DestinationFixedRgb24(16, 8) { DmdAllowHdScaling = true };
+
+			_graph.Source = _source;
+			_graph.ScalerMode = ScalerMode.Xbr;
+			_graph.Destinations = new List<IDestination> { dest };
+			_graph.StartRendering();
+
+			// two orange blocks only touching at the corner, where scale2x leaves a checkered gap
+			var rgbFrame = FrameGenerator.FromString(@"
+				00 00 00 00 FF FF 00 00
+				00 00 00 00 FF FF 00 00
+				00 00 FF FF 00 00 00 00
+				00 00 FF FF 00 00 00 00", @"
+				00 00 00 00 80 80 00 00
+				00 00 00 00 80 80 00 00
+				00 00 80 80 00 00 00 00
+				00 00 80 80 00 00 00 00", @"
+				00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00");
+
+			var upscaledFrame = FrameGenerator.FromString(@"
+				00 00 00 00 00 00 00 00 FF FF FF FF 00 00 00 00
+				00 00 00 00 00 00 00 00 FF FF FF FF 00 00 00 00
+				00 00 00 00 00 00 00 00 FF FF FF FF 00 00 00 00
+				00 00 00 00 00 00 00 00 FF FF FF 00 00 00 00 00
+				00 00 00 00 00 FF FF FF 00 00 00 00 00 00 00 00
+				00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00
+				00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00
+				00 00 00 00 FF FF FF FF 00 00 00 00 00 00 00 00", @"
+				00 00 00 00 00 00 00 00 80 80 80 80 00 00 00 00
+				00 00 00 00 00 00 00 00 80 80 80 80 00 00 00 00
+				00 00 00 00 00 00 00 00 80 80 80 80 00 00 00 00
+				00 00 00 00 00 00 00 00 80 80 80 00 00 00 00 00
+				00 00 00 00 00 80 80 80 00 00 00 00 00 00 00 00
+				00 00 00 00 80 80 80 80 00 00 00 00 00 00 00 00
+				00 00 00 00 80 80 80 80 00 00 00 00 00 00 00 00
+				00 00 00 00 80 80 80 80 00 00 00 00 00 00 00 00", @"
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
+
+			await AssertFrame(_source, dest, rgbFrame, upscaledFrame);
+		}
+
+		[TestCase]
 		public async Task Should_Downscale_With_Fit()
 		{
 			var dest = new DestinationFixedRgb24(6, 2) { DmdAllowHdScaling = true };

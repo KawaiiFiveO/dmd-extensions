@@ -127,6 +127,9 @@ namespace LibDmd.Frame
 				case ScalerMode.Scale2x:
 					return Update(Dimensions * 2, FrameUtil.Scale2X(Dimensions, ConvertToRgb24().Data, 3));
 
+				case ScalerMode.Xbr:
+					return Update(Dimensions * 2, FrameUtil.ScaleXbr(Dimensions, ConvertToRgb24().Data, 3));
+
 				default:
 					throw new ArgumentOutOfRangeException(nameof(scalerMode), scalerMode, null);
 			}

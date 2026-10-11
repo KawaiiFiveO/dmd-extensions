@@ -30,7 +30,8 @@ namespace LibDmd.Output.Virtual.Dmd
 	/// Interaction logic for VirtualDmdControl.xaml
 	/// </summary>
 	public partial class VirtualDmdControl : IGray2Destination, IGray4Destination, IGray8Destination, IColoredGray2Destination, IColoredGray4Destination,
-		IColoredGray6Destination, IBitmapDestination, IRgb565Destination, IPaletteDestination, IResizableDestination, IVirtualControl, IColorRotationDestination
+		IColoredGray6Destination, IBitmapDestination, IRgb565Destination, IPaletteDestination, IResizableDestination, IVirtualControl, IColorRotationDestination,
+		ISmoothingDestination
 	// these others are for debugging purpose. basically you can make the virtual dmd
 	// behave like any other display by adding/removing interfaces
 	// standard (aka production); IRgb24Destination, IBitmapDestination, IResizableDestination
@@ -100,6 +101,8 @@ namespace LibDmd.Output.Virtual.Dmd
 		private ushort _fboErrorCount;
 
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+
+		public bool SmoothsEdges => _style.SmoothEdges;
 
 		public VirtualDmdControl()
 		{
@@ -374,6 +377,8 @@ namespace LibDmd.Output.Virtual.Dmd
 					if (_style.HasGlass) code.Append("#define GLASS\n");
 					if (_style.HasGamma) code.Append("#define GAMMA\n");
 					if (_style.DotSize > 0.5) code.Append("#define DOT_OVERLAP\n");
+					if (_style.HasScanlines) code.Append("#define SCANLINES\n");
+					if (_style.SmoothEdges) code.Append("#define SMOOTH_EDGES\n");
 					var nfi = NumberFormatInfo.InvariantInfo;
 					code.AppendFormat(nfi, "const float dotSize = {0:0.00000};\n", _style.DotSize);
 					code.AppendFormat(nfi, "const float dotRounding = {0:0.00000};\n", _style.DotRounding);
@@ -383,6 +388,8 @@ namespace LibDmd.Output.Virtual.Dmd
 					code.AppendFormat(nfi, "const float backGlow = {0:0.00000};\n", _style.BackGlow);
 					code.AppendFormat(nfi, "const float dotGlow = {0:0.00000};\n", _style.DotGlow);
 					code.AppendFormat(nfi, "const float gamma = {0:0.00000};\n", _style.Gamma);
+					code.AppendFormat(nfi, "const float scanlines = {0:0.00000};\n", _style.Scanlines);
+					code.AppendFormat(nfi, "const float scanlinesPerDot = {0:0.00000};\n", Math.Max(1, _style.ScanlinesPerDot));
 					code.Append(ReadResource(@"LibDmd.Output.Virtual.Dmd.Dmd.frag"));
 					_dmdShader.Create(gl, ReadResource(@"LibDmd.Output.Virtual.Dmd.Dmd.vert"), code.ToString(), _attributeLocations);
 					_dsDmdTexture = _dmdShader.GetUniformLocation(gl, "dmdTexture");

@@ -585,6 +585,13 @@ namespace LibDmd.Frame
 							default: return Update(Dimensions * 2, FrameUtil.Scale2X(Dimensions, Data, 1));
 						}
 
+					case ScalerMode.Xbr:
+						switch (BitLength) {
+							case 24: return Update(Dimensions * 2, FrameUtil.ScaleXbr(Dimensions, Data, 3));
+							case 16: return Update(Dimensions * 2, FrameUtil.ScaleXbr(Dimensions, Data, 2));
+							default: return Update(Dimensions * 2, FrameUtil.ScaleXbr(Dimensions, Data, 1));
+						}
+
 					default:
 						throw new ArgumentOutOfRangeException(nameof(scalerMode), scalerMode, null);
 				}

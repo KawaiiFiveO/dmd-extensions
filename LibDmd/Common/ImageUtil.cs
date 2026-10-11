@@ -804,6 +804,11 @@ namespace LibDmd.Common
 		/// <summary>
 		/// Use scale2x algorithm
 		/// </summary>
-		Scale2x
+		Scale2x,
+
+		/// <summary>
+		/// Use xBR algorithm (sharp, no blending)
+		/// </summary>
+		Xbr
 	}
 }

@@ -35,6 +35,15 @@ namespace DmdExt.Common
 		[Option("virtual-dot-sharpness", HelpText = "Sharpness of the dots of the virtual DMD. 0 = fuzzy borders, 1 = sharp borders. Default: 0.8")]
 		public double VirtualDmdDotSharpness { get; set; } = 0.8;
 
+		[Option("virtual-scanlines", HelpText = "Strength of the scanlines of the virtual DMD. Dimmer dots get thinner lines. 0 = disabled. Default: 0")]
+		public double VirtualDmdScanlines { get; set; } = 0;
+
+		[Option("virtual-scanlines-per-dot", HelpText = "Number of scanlines per row of dots of the virtual DMD. Default: 1")]
+		public int VirtualDmdScanlinesPerDot { get; set; } = 1;
+
+		[Option("virtual-smooth-edges", HelpText = "Renders solid pixels with corners cut along 45° lines on the virtual DMD. Default: false")]
+		public bool VirtualDmdSmoothEdges { get; set; } = false;
+
 		[Option("virtual-dot-unlit", HelpText = "Default color for unlit dots of the virtual DMD. Default: #000000")]
 		public Color VirtualDmdUnlitDot { get; set; } = Color.FromArgb(0, 0, 0, 0);
 
@@ -74,7 +83,7 @@ namespace DmdExt.Common
 		[Option("scale-to-hd", HelpText = "Scale colorized content up to 256x64, Default: false")]
 		public bool ScalingToHD { get; set; } = false;
 
-		[Option("scaler-mode", HelpText = "Scaling mode for colorized content.  [ doubler, scale2x ]. Default: \"scale2x\".")]
+		[Option("scaler-mode", HelpText = "Scaling mode for colorized content.  [ doubler, scale2x, xbr ]. Default: \"scale2x\".")]
 		public ScalerMode ScalingMode { get; set; } = ScalerMode.Scale2x;
 
 		[Option('c', "color", HelpText = "Sets the color of a grayscale source that is rendered on an RGB destination. Default: ff3000")]
@@ -283,6 +292,9 @@ namespace DmdExt.Common
 			DotSize = _options.VirtualDmdDotSize,
 			DotRounding = _options.VirtualDmdDotRounding,
 			DotSharpness = _options.VirtualDmdDotSharpness,
+			Scanlines = _options.VirtualDmdScanlines,
+			ScanlinesPerDot = _options.VirtualDmdScanlinesPerDot,
+			SmoothEdges = _options.VirtualDmdSmoothEdges,
 			UnlitDot = _options.VirtualDmdUnlitDot,
 			Brightness = _options.VirtualDmdBrightness,
 			DotGlow = _options.VirtualDmdDotGlow,

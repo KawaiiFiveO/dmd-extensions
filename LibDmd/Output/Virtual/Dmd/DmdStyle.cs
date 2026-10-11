@@ -21,6 +21,24 @@ namespace LibDmd.Output.Virtual.Dmd
 		public double DotSharpness { get; set; } = 0.8;
 
 		/// <summary>
+		/// Strength of the scanlines (0.0 to disable). Scanlines get thinner on dimmer dots, so bright dots stay
+		/// solid while darker shades show horizontal lines.
+		/// </summary>
+		public double Scanlines { get; set; }
+		public bool HasScanlines => Scanlines > 0.01;
+
+		/// <summary>
+		/// Number of scanlines per row of dots.
+		/// </summary>
+		public int ScanlinesPerDot { get; set; } = 1;
+
+		/// <summary>
+		/// Renders solid pixels and cuts their corners along 45° lines where an edge is detected,
+		/// like ColorDMD Sigma. Dot size and rounding don't apply when enabled.
+		/// </summary>
+		public bool SmoothEdges { get; set; }
+
+		/// <summary>
 		/// Color of unlit dots (use additive blending).
 		/// </summary>
 		public Color UnlitDot { get; set; } = Color.FromArgb(0, 0, 0, 0);
@@ -98,6 +116,9 @@ namespace LibDmd.Output.Virtual.Dmd
 				DotSize = DotSize,
 				DotRounding = DotRounding,
 				DotSharpness = DotSharpness,
+				Scanlines = Scanlines,
+				ScanlinesPerDot = ScanlinesPerDot,
+				SmoothEdges = SmoothEdges,
 				UnlitDot = Color.FromArgb(UnlitDot.A, UnlitDot.R, UnlitDot.G, UnlitDot.B),
 				Brightness = Brightness,
 				DotGlow = DotGlow,

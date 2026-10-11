@@ -420,6 +420,15 @@ namespace LibDmd.DmdDevice
 						case "dotsharpness":
 							_styles[styleName].DotSharpness = GetDouble(keyValues.Current.KeyName, 0.8);
 							break;
+						case "scanlines":
+							_styles[styleName].Scanlines = GetDouble(keyValues.Current.KeyName, 0.0);
+							break;
+						case "scanlinesperdot":
+							_styles[styleName].ScanlinesPerDot = GetInt(keyValues.Current.KeyName, 1);
+							break;
+						case "smoothedges":
+							_styles[styleName].SmoothEdges = GetBoolean(keyValues.Current.KeyName, false);
+							break;
 						case "unlitdot":
 							_styles[styleName].UnlitDot = fromSKColor(GetSKColor(keyValues.Current.KeyName, SKColor.Empty));
 							break;
@@ -510,6 +519,9 @@ namespace LibDmd.DmdDevice
 			Set(prefix + "dotsize", style.DotSize);
 			Set(prefix + "dotrounding", style.DotRounding);
 			Set(prefix + "dotsharpness", style.DotSharpness);
+			Set(prefix + "scanlines", style.Scanlines);
+			Set(prefix + "scanlinesperdot", style.ScanlinesPerDot);
+			Set(prefix + "smoothedges", style.SmoothEdges);
 			Set(prefix + "unlitdot", style.UnlitDot);
 			Set(prefix + "dotglow", style.DotGlow);
 			Set(prefix + "backglow", style.BackGlow);
@@ -542,6 +554,9 @@ namespace LibDmd.DmdDevice
 			Remove(prefix + "dotsize");
 			Remove(prefix + "dotrounding");
 			Remove(prefix + "dotsharpness");
+			Remove(prefix + "scanlines");
+			Remove(prefix + "scanlinesperdot");
+			Remove(prefix + "smoothedges");
 			Remove(prefix + "unlitdot");
 			Remove(prefix + "dotglow");
 			Remove(prefix + "backglow");

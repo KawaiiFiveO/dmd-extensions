@@ -172,9 +172,7 @@ namespace LibDmd.Converter.Vni
 
 				if (_lcmBufferPlanes[0].Length == planes[0].Length * 4)
 				{
-					planes = ScalerMode == ScalerMode.Scale2x
-						? FrameUtil.Scale2X(dim, planes)
-						: FrameUtil.ScaleDouble(dim, planes);
+					planes = FrameUtil.ScaleUp(dim, planes, ScalerMode);
 				}
 
 				for (int i = 0; i < numLcmPlanes; i++)
